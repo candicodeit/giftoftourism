@@ -337,19 +337,19 @@ var array_deals = [
 			deal_type:"coupon", 
 			title:"THE VIRGINIA AQUARIUM &amp; MARINE SCIENCE CENTER", 
 			description:"Escape the cold shoulder of winter with a trip to the hottest destination at the beach, the Virginia Aquarium. Enjoy smaller crowds along with your favorite aquatic friends as you dive into a world of underwater adventure, rub elbows with Komodo dragons, play with seals, go under the water with the Red Sea exhibit, and so much more!", 
-			link:"http://www.visitvirginiabeach.com"
+			link:"pdf/aquarium.pdf"
 	}, 
 	{
 			deal_type:"coupon", 
 			title:"Old Coast Guard Station", 
 			description:"Must present valid ID with Virginia Beach address to receive deal. Does not apply to special programs or group tours. Offer expires December 31, 2012.", 
-			link:"http://www.visitvirginiabeach.com"
+			link:"pdf/coastguard.pdf"
 	}, 
 	{
 			deal_type:"coupon", 
 			title:"Edgar Kayce A.R.E.", 
 			description:"Download and present this coupon at the Edgar Kayce A.R.E. VisitorÍs Center and receive a free gift just for showing up!", 
-			link:"http://www.visitvirginiabeach.com"
+			link:"pdf/edgar.pdf"
 	},
 	{
 			deal_type:"contest", 
@@ -361,13 +361,13 @@ var array_deals = [
 			deal_type:"coupon", 
 			title:"MOCA", 
 			description:"Purchase an Associate Membership at the Museum of Contemporary Art and save $25 just for being a Virginia Beach resident! Now for just $100 (regular price $125), youÍll get access to some great Associate Level Member Benefits.", 
-			link:"http://www.visitvirginiabeach.com"
+			link:"pdf/moca.pdf"
 	}, 
 	{
 			deal_type:"coupon", 
 			title:"Sandler Center", 
 			description:"Use promocode VBGIFT to receive 10% off of tickets to see DanceBrazil on April 10th at 7:30 at the Sandler Center! <a href=\"http://ev8.evenue.net/cgi-bin/ncommerce3/EVExecMacro?linkID=global-sandler&evm=prmo&RSRC=&RDAT=&caller=PR\" target=\"blank\">Click here</a> to redeem your gift today!",
-			link:"http://www.visitvirginiabeach.com"
+			link:"pdf/sandler.pdf"
 	}
 ];
 
