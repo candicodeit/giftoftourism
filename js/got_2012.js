@@ -11,10 +11,10 @@ $(document).ready(function () {
 	initContent();
 	checkHash("init");
 	
-	$('#deal_overlay').hide();
+	//$('#deal_overlay').hide();
 	
 	$('a.learn').unbind('click').click(function(){
-		var dealNum = new Array(), i = '';
+		var dealNum = new Array();
 		var dealString = $(this).attr('href');
 		
 		dealNum = dealString.split('/', 3);
@@ -25,8 +25,25 @@ $(document).ready(function () {
 		target.empty();
 		$(template).appendTo( target );
 		
-		$('#deal_overlay').show();
+		$('#deal_overlay').fadeIn();
+	});
+	
+	// Switch between deals with modal is open
+	$('.prev-deals, .next-deals').unbind('click').live('click',function(){
+		var dealNum = new Array();
+		var dealString = $(this).attr('href');
 		
+		dealNum = dealString.split('/', 3);
+		var dealItem = parseInt(dealNum[2]);
+		
+		var template = buildDeal(dealItem), target = $('#deal_overlay');
+		
+		target.empty();
+		$(template).appendTo( target );
+	});
+	
+	$('.deal_close').live('click',function(){
+		$('#deal_overlay').fadeOut();
 	});
 });
 
@@ -338,6 +355,20 @@ var array_deals = [
 
 function buildDeal(index){
 	//var data = array_deals[index];
+	var numDeals = array_deals.length - 1;
+	var prev ='', next ='';
+	
+	//console.log('numDeals: '+numDeals+', prev: '+prev+', next: '+next );
+	
+	// Check if there's a previous deal
+	if(index != 1){
+		prev = index - 1;
+	} 
+
+	// Check if there's a next deal	
+	if(index != numDeals){
+		next = index + 1;
+	} 
 	
 	/*
 template =  "<div class=\""+ array_deals[index].deal_type +"\">";
@@ -362,15 +393,19 @@ template =  "<div class=\""+ array_deals[index].deal_type +"\">";
 	}
 	template +=  "</div><!-- ."+ array_deals[index].deal_type +" -->";
 	
+
 	if(prev != ''){
-		template +=  "<a href=\"#/deals/"+prev+"/\" class=\"prev-deals\"><img src=\"img/left.png\" alt=\"Previous Deal\"/>";
+		template +=  "<a href=\"#/deals/"+prev+"/\" class=\"prev-deals\"><img src=\"img/left.png\" alt=\"Previous Deal\"/></a>";
 	}
 	
 	if(next != ''){
-		template +=  "<a href=\"#/deals/"+next+"/\" class=\"next-deals\"><img src=\"img/right.png\" alt=\"Next Deal\"/>";	
+		template +=  "<a href=\"#/deals/"+next+"/\" class=\"next-deals\"><img src=\"img/right.png\" alt=\"Next Deal\"/></a>";	
 	}
+
 	
 	template +=  "</div><!-- .modal -->";
+	
+	console.log(template);
 	return(template);
 	
 }
@@ -380,7 +415,6 @@ function changeContent(caller){
 	if(deals_open){
 		//toggleDeals();
 		
-		//console.log('TAG!');
 	}
 	slide_curr = "";
 	if(caller=="nav_logo"){
