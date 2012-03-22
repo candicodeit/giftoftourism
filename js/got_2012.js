@@ -90,18 +90,68 @@ function checkHash(state){
 				changeContent("nav_future");
 				deeplink = true;
 			} else if(tmpsection=="deals"){
-				toggleDeals();
+				$("#deals").stop(false,false).animate({"top": "0px"}, 600);
+				deals_open = true;
+				
+				changeContent("nav_deals");
+				deeplink = true;
+				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+				
+				deephash = parseInt(deephash);
+				console.log('deephash: '+deephash+' tmpsection: '+tmpsection+' tmphash: '+tmphash );
+								
+				var template = buildDeal(deephash), target = $('#deal_overlay');
+				$(template).appendTo( target );
+				
+				$('#deal_overlay').fadeIn();
+			} else if(tmpsection=="entry"){
+				$("#deals").stop(false,false).animate({"top": "0px"}, 600);
+				deals_open = true;
+				
+				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+			
+				var dealType = array_deals[deephash].deal_type;
+				var target = $('#deal_overlay');
+				
+				// If entry matches with deal type "contest", display entry. otherwise, redirect to deal
+				if(dealType == "contest"){
+					changeContent("nav_entry");
+					deeplink = true;
+				
+					$('.entry').clone().appendTo( target ).show()
+						.find('#contest_type').attr('value', array_deals[deephash].title);	
+				} else {
+					changeContent("nav_deals");
+					deeplink = true;
+					
+					var template = buildDeal(deephash);
+					$(template).appendTo( target );
+				}
+				
+				$('#deal_overlay').fadeIn();
+			} else if(tmpsection=="thanks"){
+				$("#deals").stop(false,false).animate({"top": "0px"}, 600);
+				deals_open = true;
+				
+				changeContent("nav_thanks");
+				deeplink = false;
+				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+				
+				var target = $('#deal_overlay');
+				$('.thank_you').clone().appendTo( target ).fadeIn();
+				
+				$('#deal_overlay').fadeIn();
 			}
 		} else {
 			handleIntro();
 		}
 	} else if(state=="update"){
-		if(location.hash!="#/"&&location.hash!=""&&location.hash!="#/deals/"){
-			/*if(deals_open){
+		if(location.hash!="#/"&&location.hash!=""&&tmpsection!="deals"&&tmpsection!="entry"){
+			if(deals_open){
 				lasthash = location.hash;
 				toggleDeals();
 				return;
-			}*/
+			}
 			deephash = tmphash.substr(0,tmphash.indexOf("/"));
 			if(slide_curr==deephash&&tmpsection==section){
 				return;
@@ -120,7 +170,7 @@ function checkHash(state){
 			toggleDeals();
 		} else {
 			section = "";
-			if(location.hash!="#/deals/"&&deals_open){
+			if(deals_open&&tmpsection!="deals"&&tmpsection!="entry"&&tmpsection!="thanks"){
 				toggleDeals();
 			}
 			if(location.hash==""||location.hash=="#/"&&!home_open){
@@ -431,10 +481,14 @@ template =  "<div class=\""+ array_deals[index].deal_type +"\">";
 
 function changeContent(caller){
 	var tmphash = location.hash;
-	if(deals_open){
-		//toggleDeals();
+	
+	console.log(tmphash);
+	/*
+if(deals_open){
+		toggleDeals();
 		
 	}
+*/
 	slide_curr = "";
 	if(caller=="nav_logo"){
 		if(!home_open){
@@ -448,6 +502,7 @@ function changeContent(caller){
 			section = "";
 		}
 	} else {
+		
 		if(home_open){
 			$("#home").stop(false,false).animate({"margin-top": "-570px"}, 700);
 			home_open = false;
@@ -470,14 +525,22 @@ function changeContent(caller){
 				initSlideShow(content_community.index);
 			});
 			section = "community";
-		} else if(caller="nav_future"){
+		} else if(caller=="nav_future"){
+			console.log('else');
 			$("#content_main").fadeOut(200, function(){
 				$("#content_main").fadeIn(800).html(content_future.src);
 				initSlideShow(content_future.index);
 			});	
 			section = "future";
+		} else if(caller=="nav_deals"){
+			section = "deals";
+			console.log('Deals');
+		} else if(caller=="nav_entry"){
+			section = "entry";
+		} else if(caller=="nav_thanks"){
+			section = "thanks";
 		}
-		tmphash = "#/"+section+"/"
+		tmphash = "#/"+section+"/";
 		if(deephash){
 			tmphash += deephash+"/";
 		}
@@ -490,12 +553,14 @@ function toggleDeals(){
 	if(deals_open){ // close
 		$("#deals").stop(false,false).animate({"top": "-600px"}, 600);
 		deals_open = false;
-		if(lasthash=="#/deals/"&&!home_open){
+		var tmpsection = location.hash.substr(2,location.hash.indexOf("/",2)-2);
+		
+		if(tmpsection=="deals"||tmpsection=="entry"||tmpsection=="thanks"&&!home_open){
 			changeContent("nav_logo");
 		} else {
 			location.hash = lasthash;
 		}
-//		$('#deal_overlay').hide();
+		$('#deal_overlay').hide();
 
 	} else { //open
 		$("#deals").stop(false,false).animate({"top": "0px"}, 600);
