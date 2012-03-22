@@ -69,6 +69,13 @@ $(document).ready(function () {
 function checkHash(state){
 	var tmpsection = location.hash.substr(2,location.hash.indexOf("/",2)-2);
 	var tmphash = location.hash.substr(location.hash.indexOf("/",2)+1);
+	
+	if (tmphash == "#cc_video"){
+		var videohash = tmphash,
+		tmphash = "7/",
+		tmpsection = "future";
+	}
+	
 	if(state=="init"){
 		$(window).bind("hashchange", function(){
 			checkHash("update");
@@ -98,7 +105,7 @@ function checkHash(state){
 				deephash = tmphash.substr(0,tmphash.indexOf("/"));
 				
 				deephash = parseInt(deephash);
-				console.log('deephash: '+deephash+' tmpsection: '+tmpsection+' tmphash: '+tmphash );
+				//console.log('deephash: '+deephash+' tmpsection: '+tmpsection+' tmphash: '+tmphash );
 								
 				var template = buildDeal(deephash), target = $('#deal_overlay');
 				$(template).appendTo( target );
@@ -152,7 +159,20 @@ function checkHash(state){
 				toggleDeals();
 				return;
 			}
-			deephash = tmphash.substr(0,tmphash.indexOf("/"));
+			
+			if(location.hash=="#cc_video"){
+				
+				// Triggers the fancybox
+				$("a.m_video").trigger("click");
+				tmpsection = "future",
+				deephash = 7;
+				
+				location.hash = "#/"+tmpsection+"/"+deephash+"/";
+				
+			} else {
+				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+			}
+			
 			if(slide_curr==deephash&&tmpsection==section){
 				return;
 			} else {
@@ -298,11 +318,11 @@ function initContent(){
 		{src:"lifestyle_03.jpg",alt:"City and state tax revenue from tourism &amp; convention dollars to the tune of $94.9 million in 2010"},
 		{src:"lifestyle_04.jpg",alt:"Help contribute to the very things that make Virginia Beach so great, like awesome local restaurants, shopping, free concerts, great events"},
 		{src:"lifestyle_05.jpg",alt:"The Beach"},
-		{src:"lifestyle_06.jpg",alt:"Plus easy access to the boardwalk and resort area",link:{url:"http://www.visitvirginiabeach.com/maps/",title:"link title",x:180,y:220,w:356,h:52}},
+		{src:"lifestyle_06.jpg",alt:"Plus easy access to the boardwalk and resort area",link:{url:"http://www.visitvirginiabeach.com/maps/",title:"link title",x:180,y:220,w:356,h:52,targetLink:"blank"}},
 		{src:"lifestyle_07.jpg",alt:"Sure, there are going to be a few bumps in the sand that come with living in a resort city"},
 		{src:"lifestyle_08.jpg",alt:"But what we get in return is a destination funded in large part by tourism &amp; conventions that we, the locals, get to groove on year-round"},
 		{src:"lifestyle_09.jpg",alt:"It&rsquo;s a great time to be a local tourist"},
-		{src:"lifestyle_10.jpg",alt:"Start here",link:{url:"http://www.visitvirginiabeach.com/",title:"link title",x:304,y:142,w:210,h:80}}
+		{src:"lifestyle_10.jpg",alt:"Start here",link:{url:"http://www.visitvirginiabeach.com/",title:"link title",x:304,y:142,w:210,h:80,targetLink:"blank"}}
 	]),index:slides_lifestyle};
 	
 	content_numbers.src = buildContent(slides_numbers,[
@@ -349,9 +369,9 @@ function initContent(){
 		{src:"future_04.jpg",alt:"And entertainment offerings, many being backed by public financial support"},
 		{src:"future_05.jpg",alt:"Fierce competition is growing in places like Louisville, Washington D.C., Raleigh, Myrtle Beach, and many other destinations"},
 		{src:"future_06.jpg",alt:"In the current economic climate, the only certainty is that we must continue to build on our successes, by reinvesting in the tourism &amp; convention industry"},
-		{src:"future_07.jpg",alt:"Future city improvement initiatives like the expansion of the Virginia Beach Convention Center to include additional parking &amp; meeting space,"},
+		{src:"future_07.jpg",alt:"Future city improvement initiatives like the expansion of the Virginia Beach Convention Center to include additional parking &amp; meeting space,",link:{url:"#cc_video",classVideo:"m_video",title:"Virginia Beach Convention Center",x:35,y:223,w:320,h:30,targetLink:"self"}},
 		{src:"future_08.jpg",alt:"The construction of a Convention Center Headquarters Hotel, the development of the 31st Street gateway and 19th Street corridor"},
-		{src:"future_09.jpg",alt:"And many other city improvement initiatives found here help position virginia beach as a top-tier tourism &amp; convention destination and keeps us competitive in a challenging arena",link:{url:"http://www.vbcvb.com/new-development-projects.aspx",title:"link title",x:278,y:105,w:70,h:30}},
+		{src:"future_09.jpg",alt:"And many other city improvement initiatives found here help position virginia beach as a top-tier tourism &amp; convention destination and keeps us competitive in a challenging arena",link:{url:"http://www.vbcvb.com/new-development-projects.aspx",title:"link title",x:278,y:105,w:70,h:30,targetLink:"blank"}},
 		{src:"future_10.jpg",alt:"The best part is, it&rsquo;s controllable in terms of the city&rsquo;s economic future"},
 		{src:"future_11.jpg",alt:"We as a community have a say in what the tourism industry can become in Virginia Beach"},
 		{src:"future_12.jpg",alt:"It&rsquo;s a great time to be a local tourist"}
@@ -359,6 +379,28 @@ function initContent(){
 	content_future.index = slides_future;
 	
 	initContact();
+	
+	// Convention Center video on click
+	$("a.m_video").live('click', function(){
+		if ( !$.browser.msie ) {
+			var video = $('#cc_video')[0];
+				video.play();
+		}
+		$(this).fancybox({ 
+			'transitionIn'	:	'fade',
+			'width'         		: 'auto',
+			'height': 350,
+			'type' : 'inline', 
+			'scrolling' : 'no',
+			'onStart': function(){
+				$("#contact_table").fadeIn(800);
+				$("#contact_sent").css("display","none");
+			},
+			'onCleanup': function(){
+				$("#fancybox-overlay").fadeOut();
+			}
+		});
+	});
 }
 
 function buildContent(index,slides){
@@ -367,8 +409,9 @@ function buildContent(index,slides){
 	var result = "<div class='content_container'>"+ss_pre+ss_next+"<div class='ss_wrap'><div id='ss_content'>";
 	for(var s=0;s<slides.length;s++){
 		index.push(-625*s);
+		
 		if(slides[s].link){
-			result += "<a href='"+slides[s].link.url+"' title='"+slides[s].link.title+"' target='_blank'><img src='img/blank.png' class='ss_link' style='margin:"+slides[s].link.y+"px 0 0 "+slides[s].link.x+"px; width:"+slides[s].link.w+"px; height:"+slides[s].link.h+"px' /></a>";
+			result += "<a href='"+slides[s].link.url+"' class='"+slides[s].link.classVideo+"' title='"+slides[s].link.title+"' target='_"+slides[s].link.targetLink+"'><img src='img/blank.png' class='ss_link' style='margin:"+slides[s].link.y+"px 0 0 "+slides[s].link.x+"px; width:"+slides[s].link.w+"px; height:"+slides[s].link.h+"px;' /></a>";
 		}
 		result += "<img class='ss_slide' src='img/"+slides[s].src+"' alt='"+slides[s].alt+"' title='"+slides[s].alt+"' />";
 	}
@@ -481,9 +524,7 @@ template =  "<div class=\""+ array_deals[index].deal_type +"\">";
 
 function changeContent(caller){
 	var tmphash = location.hash;
-	
-	console.log(tmphash);
-	/*
+		/*
 if(deals_open){
 		toggleDeals();
 		
@@ -526,7 +567,6 @@ if(deals_open){
 			});
 			section = "community";
 		} else if(caller=="nav_future"){
-			console.log('else');
 			$("#content_main").fadeOut(200, function(){
 				$("#content_main").fadeIn(800).html(content_future.src);
 				initSlideShow(content_future.index);
@@ -534,7 +574,6 @@ if(deals_open){
 			section = "future";
 		} else if(caller=="nav_deals"){
 			section = "deals";
-			console.log('Deals');
 		} else if(caller=="nav_entry"){
 			section = "entry";
 		} else if(caller=="nav_thanks"){
