@@ -5,22 +5,27 @@ var lasthash = "";
 var deephash = "";
 var deeplink = false;
 
+
 $(document).ready(function () {
 	initNav();
 	initContent();
 	checkHash("init");
 	
-	// Open deal modal
+	$('#deal_overlay').hide();
+	
 	$('a.learn').unbind('click').click(function(){
-		var dealNum = parseInt($(this).attr('href').substr(-2).replace('/', ''));
-	//	console.log(dealNum);
-	alert('dealNum'+dealNum);
-				
-		var template = buildDeal(dealNum), target = $('#deal_overlay');
+		var dealNum = new Array(), i = '';
+		var dealString = $(this).attr('href');
+		
+		dealNum = dealString.split('/', 3);
+		var dealItem = parseInt(dealNum[2]);
+		
+		var template = buildDeal(dealItem), target = $('#deal_overlay');
+		
 		target.empty();
 		$(template).appendTo( target );
 		
-		$('#deal_overlay').fadeIn();
+		$('#deal_overlay').show();
 		
 	});
 });
@@ -49,28 +54,18 @@ function checkHash(state){
 				changeContent("nav_future");
 				deeplink = true;
 			} else if(tmpsection=="deals"){
-				$("#deals").stop(false,false).animate({"top": "0px"}, 600);
-				deals_open = true;
-				
-				changeContent("nav_deals");
-				deeplink = true;
-				deephash = tmphash.substr(0,tmphash.indexOf("/"));
-								
-				var template = buildDeal(deephash), target = $('#deal_overlay');
-				$(template).appendTo( target );
-				
-				$('#deal_overlay').fadeIn();
+				toggleDeals();
 			}
 		} else {
 			handleIntro();
 		}
 	} else if(state=="update"){
-		if(location.hash!="#/"&&location.hash!=""&&location.hash!="#/deals/"&&tmpsection!="deals"){
-			if(deals_open){
+		if(location.hash!="#/"&&location.hash!=""&&location.hash!="#/deals/"){
+			/*if(deals_open){
 				lasthash = location.hash;
 				toggleDeals();
 				return;
-			}
+			}*/
 			deephash = tmphash.substr(0,tmphash.indexOf("/"));
 			if(slide_curr==deephash&&tmpsection==section){
 				return;
@@ -89,7 +84,7 @@ function checkHash(state){
 			toggleDeals();
 		} else {
 			section = "";
-			if(tmpsection!="deals"&&deals_open){
+			if(location.hash!="#/deals/"&&deals_open){
 				toggleDeals();
 			}
 			if(location.hash==""||location.hash=="#/"&&!home_open){
@@ -229,7 +224,7 @@ function initContent(){
 		{src:"numbers_01.jpg",alt:"The tourism &amp; convention industry is one of our largest and most dependable economic engines"},
 		{src:"numbers_02.jpg",alt:"In fact, starting in 2006, visitors have spent over $1 billion each year in the city."},
 		{src:"numbers_03.jpg",alt:"In 2010 alone, visitors spent $1.13 billion in Virginia Beach"},
-		{src:"numbers_04.jpg",alt:"Additionally, tourism &amp; conventions created thousands of jobs for local residents"},
+		{src:"numbers_04.jpg",alt:"Additionally, tourism &amp; conventions created tousands of jobs for local residents"},
 		{src:"numbers_05.jpg",alt:"Earning them more than $211,302,000"},
 		{src:"numbers_06.jpg",alt:"Tourism also deposited $94.9 million in city and state tax revenue"},
 		{src:"numbers_07.jpg",alt:"Money used for things like police, fire departments, and building roads"},
@@ -303,48 +298,69 @@ function buildContent(index,slides){
 var array_deals = [
 	{},
 	{
-		dealType: "coupon",
-		dealTitle: "THE VIRGINIA AQUARIUM",
-		dealDescription: "Escape the cold shoulder of winter with a trip to the hottest destination at the beach, the Virginia Aquarium. Enjoy smaller crowds along with your favorite aquatic friends as you dive into a world of underwater adventure, rub elbows with Komodo dragons, play with seals, go under the water with the Red Sea exhibit, and so much more!",
-		dealLink:"pdf/mocadeal.pdf"
+			deal_type:"coupon", 
+			title:"THE VIRGINIA AQUARIUM &amp; MARINE SCIENCE CENTER", 
+			description:"Escape the cold shoulder of winter with a trip to the hottest destination at the beach, the Virginia Aquarium. Enjoy smaller crowds along with your favorite aquatic friends as you dive into a world of underwater adventure, rub elbows with Komodo dragons, play with seals, go under the water with the Red Sea exhibit, and so much more!", 
+			link:"http://www.visitvirginiabeach.com"
+	}, 
+	{
+			deal_type:"coupon", 
+			title:"Old Coast Guard Station", 
+			description:"Must present valid ID with Virginia Beach address to receive deal. Does not apply to special programs or group tours. Offer expires December 31, 2012.", 
+			link:"http://www.visitvirginiabeach.com"
+	}, 
+	{
+			deal_type:"coupon", 
+			title:"Edgar Kayce A.R.E.", 
+			description:"Download and present this coupon at the Edgar Kayce A.R.E. VisitorÍs Center and receive a free gift just for showing up!", 
+			link:"http://www.visitvirginiabeach.com"
+	},
+	{
+			deal_type:"contest", 
+			title:"Virginia Beach Convention Center", 
+			description:"Fill out the entry form for a chance to win a pair of tickets to a designated consumer show at the Virginia Beach Convention Center."
+	},
+	{
+			deal_type:"coupon", 
+			title:"MOCA", 
+			description:"Purchase an Associate Membership at the Museum of Contemporary Art and save $25 just for being a Virginia Beach resident! Now for just $100 (regular price $125), youÍll get access to some great Associate Level Member Benefits.", 
+			link:"http://www.visitvirginiabeach.com"
+	}, 
+	{
+			deal_type:"coupon", 
+			title:"Sandler Center", 
+			description:"Use promocode VBGIFT to receive 10% off of tickets to see DanceBrazil on April 10th at 7:30 at the Sandler Center! <a href=\"http://ev8.evenue.net/cgi-bin/ncommerce3/EVExecMacro?linkID=global-sandler&evm=prmo&RSRC=&RDAT=&caller=PR\" target=\"blank\">Click here</a> to redeem your gift today!",
+			link:"http://www.visitvirginiabeach.com"
 	}
 ];
 
 // Build Deals Template
 
-function buildDeal(deal){
-	var deal = parseInt(deal);
-	var numDeals = array_deals.length - 1;
+function buildDeal(index){
+	//var data = array_deals[index];
 	
-	//console.log(numDeals);
-	//console.log(deal);
-	alert(deal);
-	
-	// Check if there's a previous deal
-	if(deal != 1){
-		var prev = deal - 1;
+	/*
+template =  "<div class=\""+ array_deals[index].deal_type +"\">";
+	template += "<h1>"+ array_deals[index].title +"</h1>";
+	template += "<p class=\"description\">"+ array_deals[index].description +"</p>";
+	if(array_deals[index].link) {
+		template += "<a href=\""+ array_deals[index].link +"\" class=\"download\">Download PDF</a>";
 	} else {
-		var prev = '';
+		template += "<a href=\"#\" class=\"enter_now\">Enter Now</a>";
 	}
-
-	// Check if there's a next deal	
-	if(deal != numDeals){
-		var next = deal + 1;
-	} else {
-		var next = '';
-	}
-	
-	var template =  "<div class=\"modal\">";
+	template +=  "</div><!-- ."+ array_deals[index].deal_type +" -->";
+*/
+	template =  "<div class=\"modal\">";
 	template +=  "<img src=\"img/close.png\" class=\"deal_close\" alt=\"Close Modal\" />";
-	template +=  "<div class=\""+ array_deals[deal].dealType +"\">";
-	template += "<h1>"+ array_deals[deal].dealTitle +"</h1>";
-	template += "<p class=\"description\">"+ array_deals[deal].dealDescription +"</p>";
-	if(array_deals[deal].link) {
-		template += "<a href=\""+ array_deals[deal].dealLink +"\" class=\"download\" target=\"_blank\">Download PDF</a>";
+	template +=  "<div class=\""+ array_deals[index].deal_type +"\">";
+	template += "<h1>"+ array_deals[index].title +"</h1>";
+	template += "<p class=\"description\">"+ array_deals[index].description +"</p>";
+	if(array_deals[index].link) {
+		template += "<a href=\""+ array_deals[index].link +"\" class=\"download\" target=\"_blank\">Download PDF</a>";
 	} else {
-		template += "<a href=\"#/entry/"+ deal +"/\" class=\"enter_now\">Enter Now</a>";
+		template += "<a href=\"#/entry/"+ index +"/\" class=\"enter_now\">Enter Now</a>";
 	}
-	template +=  "</div><!-- ."+ array_deals[deal].dealType +" -->";
+	template +=  "</div><!-- ."+ array_deals[index].deal_type +" -->";
 	
 	if(prev != ''){
 		template +=  "<a href=\"#/deals/"+prev+"/\" class=\"prev-deals\"><img src=\"img/left.png\" alt=\"Previous Deal\"/>";
@@ -355,15 +371,17 @@ function buildDeal(deal){
 	}
 	
 	template +=  "</div><!-- .modal -->";
-
 	return(template);
+	
 }
 
 function changeContent(caller){
 	var tmphash = location.hash;
-	/*if(deals_open){
-		toggleDeals();
-	}*/
+	if(deals_open){
+		//toggleDeals();
+		
+		//console.log('TAG!');
+	}
 	slide_curr = "";
 	if(caller=="nav_logo"){
 		if(!home_open){
@@ -385,7 +403,7 @@ function changeContent(caller){
 			$("#content_main").fadeOut(200, function(){
 				$("#content_main").fadeIn(800).html(content_lifestyle.src);
 				initSlideShow(content_lifestyle.index);
-			});
+			})
 			section = "lifestyle";
 		} else if(caller=="nav_numbers"){
 			$("#content_main").fadeOut(200, function(){
@@ -405,10 +423,8 @@ function changeContent(caller){
 				initSlideShow(content_future.index);
 			});	
 			section = "future";
-		} else if(caller=="nav_deals"){
-			section = "deals";
 		}
-		tmphash = "#/"+section+"/";
+		tmphash = "#/"+section+"/"
 		if(deephash){
 			tmphash += deephash+"/";
 		}
@@ -421,14 +437,12 @@ function toggleDeals(){
 	if(deals_open){ // close
 		$("#deals").stop(false,false).animate({"top": "-600px"}, 600);
 		deals_open = false;
-		var tmpsection = location.hash.substr(2,location.hash.indexOf("/",2)-2);
-		
-		if(tmpsection=="deals"&&!home_open){
+		if(lasthash=="#/deals/"&&!home_open){
 			changeContent("nav_logo");
 		} else {
 			location.hash = lasthash;
 		}
-		$('#deal_overlay').hide();
+//		$('#deal_overlay').hide();
 
 	} else { //open
 		$("#deals").stop(false,false).animate({"top": "0px"}, 600);
