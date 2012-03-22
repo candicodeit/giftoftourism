@@ -42,8 +42,27 @@ $(document).ready(function () {
 		$(template).appendTo( target );
 	});
 	
-	$('.deal_close').live('click',function(){
+	// Switch to entry form
+	$('.enter_now').unbind('click').live("click",function(){
+		var dealNum = new Array();
+		var dealString = $(this).attr('href');
+		
+		dealNum = dealString.split('/', 3);
+		var dealItem = parseInt(dealNum[2]);
+				
+		var target = $('#deal_overlay').empty();
+		$('.entry').clone().appendTo( target ).show()
+				.find('#contest_type').attr('value', array_deals[dealItem].title).end()
+				.find('#email_recipient').attr('value', array_deals[dealItem].recipient);	
+	});
+	
+	// Close modal to view deals again
+	$('.deal_close').live("click",function(){
 		$('#deal_overlay').fadeOut();
+	});
+	
+	$("#entry_submit").live("click", function(){
+		handleEntrySubmit();
 	});
 });
 
@@ -335,7 +354,8 @@ var array_deals = [
 	{
 			deal_type:"contest", 
 			title:"Virginia Beach Convention Center", 
-			description:"Fill out the entry form for a chance to win a pair of tickets to a designated consumer show at the Virginia Beach Convention Center."
+			description:"Fill out the entry form for a chance to win a pair of tickets to a designated consumer show at the Virginia Beach Convention Center.",
+			recipient: "candilanddesign@gmail.com"
 	},
 	{
 			deal_type:"coupon", 
@@ -381,9 +401,9 @@ template =  "<div class=\""+ array_deals[index].deal_type +"\">";
 	}
 	template +=  "</div><!-- ."+ array_deals[index].deal_type +" -->";
 */
-	template =  "<div class=\"modal\">";
-	template +=  "<img src=\"img/close.png\" class=\"deal_close\" alt=\"Close Modal\" />";
-	template +=  "<div class=\""+ array_deals[index].deal_type +"\">";
+	var template =  "<div class=\"modal\">";
+	template += "<img src=\"img/close.png\" class=\"deal_close\" alt=\"Close Modal\" />";
+	template += "<div class=\""+ array_deals[index].deal_type +"\">";
 	template += "<h1>"+ array_deals[index].title +"</h1>";
 	template += "<p class=\"description\">"+ array_deals[index].description +"</p>";
 	if(array_deals[index].link) {
@@ -405,7 +425,6 @@ template =  "<div class=\""+ array_deals[index].deal_type +"\">";
 	
 	template +=  "</div><!-- .modal -->";
 	
-	console.log(template);
 	return(template);
 	
 }
@@ -530,6 +549,33 @@ function handleContactSubmit(){
 				});
 			}
 		});
+	}
+}
+
+// Submit entry form
+function handleEntrySubmit(){
+	if($("#deal_overlay #txt_fname").val()!=""&&$("#deal_overlay #txt_email_addr").val()&&$("#deal_overlay #check_age").attr("checked")=="checked"&&$("#deal_overlay #check_terms").attr("checked")=="checked")	{
+		$.post("entry.asp", {
+			txt_fname:$("#txt_fname").val(), 
+			txt_lname:$("#txt_lname").val(),
+			txt_address:$("#txt_address").val(), 
+			txt_city:$("#txt_city").val(),
+			select_state:$("#select_state").val(), 
+			txt_zip_code:$("#txt_zip_code").val(),
+			txt_phone: $("#txt_phone").val(), 
+			txt_email_addr: $("#txt_email_addr").val(), 
+			check_age: $("#check_age").getAttribute("checked"), 
+			check_terms: $("#check_terms").getAttribute("checked"),
+		
+		txt_subject: "Gift of Tourism Entry Form"}, function(data) {
+			if(data=="sent"){
+				var target = $('#deal_overlay');
+				target.empty();
+				$('.thank_you').appendTo( target ).show();
+			}
+		});
+	} else {
+		$('#deal_overlay .required').show();
 	}
 }
 
