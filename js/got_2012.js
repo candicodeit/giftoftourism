@@ -5,29 +5,94 @@ var lasthash = "";
 var deephash = "";
 var deeplink = false;
 
+
 $(document).ready(function () {
 	initNav();
 	initContent();
 	checkHash("init");
 	
-	// Open deal modal
+	//$('#deal_overlay').hide();
+	
 	$('a.learn').unbind('click').click(function(){
-		var dealNum = parseInt($(this).attr('href').substr(-2).replace('/', ''));
-	//	console.log(dealNum);
-	alert('dealNum'+dealNum);
-				
-		var template = buildDeal(dealNum), target = $('#deal_overlay');
+		var dealNum = new Array();
+		var dealString = $(this).attr('href');
+		
+		dealNum = dealString.split('/', 3);
+		var dealItem = parseInt(dealNum[2]);
+		
+		var template = buildDeal(dealItem), target = $('#deal_overlay');
+		
 		target.empty();
 		$(template).appendTo( target );
 		
 		$('#deal_overlay').fadeIn();
+	});
+	
+	// Switch between deals with modal is open
+	$('.prev-deals, .next-deals').unbind('click').live('click',function(){
+		var dealNum = new Array();
+		var dealString = $(this).attr('href');
 		
+		dealNum = dealString.split('/', 3);
+		var dealItem = parseInt(dealNum[2]);
+		
+		var template = buildDeal(dealItem), target = $('#deal_overlay');
+		
+		target.empty();
+		$(template).appendTo( target );
+	});
+	
+	// Switch to entry form
+	$('.enter_now').unbind('click').live("click",function(){
+		var dealNum = new Array();
+		var dealString = $(this).attr('href');
+		
+		dealNum = dealString.split('/', 3);
+		var dealItem = parseInt(dealNum[2]);
+				
+		var target = $('#deal_overlay').empty();
+		$('.entry').clone().appendTo( target ).show()
+				.find('#contest_type').attr('value', array_deals[dealItem].title).end()
+				.find('#email_recipient').attr('value', array_deals[dealItem].recipient);	
+	});
+	
+	// Close modal to view deals again
+	$('.deal_close').live("click",function(){
+		$('#deal_overlay').fadeOut();
+	});
+	
+	// View more deals
+	$('.more-deals').live('click',function(e){
+		e.preventDefault();
+		//console.log($('.prev-set').css('display'));
+		if($('.prev-set').css('display')=='table-row'){
+			$('.prev-set').hide();
+			$('.next-set').show(); 	
+			
+			$('.more-deals img').attr('src', 'img/prev-deals.png');
+		} else {
+			$('.prev-set').show();
+			$('.next-set').hide(); 	
+			
+			$('.more-deals img').attr('src', 'img/more-deals.png');
+		}
+	});
+	
+	$("#entry_submit").live("click", function(){
+		handleEntrySubmit();
 	});
 });
 
 function checkHash(state){
 	var tmpsection = location.hash.substr(2,location.hash.indexOf("/",2)-2);
 	var tmphash = location.hash.substr(location.hash.indexOf("/",2)+1);
+	
+	if (tmphash == "#cc_video"){
+		var videohash = tmphash,
+		tmphash = "7/",
+		tmpsection = "future";
+	}
+	
 	if(state=="init"){
 		$(window).bind("hashchange", function(){
 			checkHash("update");
@@ -55,9 +120,49 @@ function checkHash(state){
 				changeContent("nav_deals");
 				deeplink = true;
 				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+				
+				deephash = parseInt(deephash);
+				//console.log('deephash: '+deephash+' tmpsection: '+tmpsection+' tmphash: '+tmphash );
 								
 				var template = buildDeal(deephash), target = $('#deal_overlay');
 				$(template).appendTo( target );
+				
+				$('#deal_overlay').fadeIn();
+			} else if(tmpsection=="entry"){
+				$("#deals").stop(false,false).animate({"top": "0px"}, 600);
+				deals_open = true;
+				
+				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+			
+				var dealType = array_deals[deephash].deal_type;
+				var target = $('#deal_overlay');
+				
+				// If entry matches with deal type "contest", display entry. otherwise, redirect to deal
+				if(dealType == "contest"){
+					changeContent("nav_entry");
+					deeplink = true;
+				
+					$('.entry').clone().appendTo( target ).show()
+						.find('#contest_type').attr('value', array_deals[deephash].title);	
+				} else {
+					changeContent("nav_deals");
+					deeplink = true;
+					
+					var template = buildDeal(deephash);
+					$(template).appendTo( target );
+				}
+				
+				$('#deal_overlay').fadeIn();
+			} else if(tmpsection=="thanks"){
+				$("#deals").stop(false,false).animate({"top": "0px"}, 600);
+				deals_open = true;
+				
+				changeContent("nav_thanks");
+				deeplink = false;
+				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+				
+				var target = $('#deal_overlay');
+				$('.thank_you').clone().appendTo( target ).fadeIn();
 				
 				$('#deal_overlay').fadeIn();
 			}
@@ -65,13 +170,26 @@ function checkHash(state){
 			handleIntro();
 		}
 	} else if(state=="update"){
-		if(location.hash!="#/"&&location.hash!=""&&location.hash!="#/deals/"&&tmpsection!="deals"){
+		if(location.hash!="#/"&&location.hash!=""&&tmpsection!="deals"&&tmpsection!="entry"){
 			if(deals_open){
 				lasthash = location.hash;
 				toggleDeals();
 				return;
 			}
-			deephash = tmphash.substr(0,tmphash.indexOf("/"));
+			
+			if(location.hash=="#cc_video"){
+				
+				// Triggers the fancybox
+				$("a.m_video").trigger("click");
+				tmpsection = "future",
+				deephash = 7;
+				
+				location.hash = "#/"+tmpsection+"/"+deephash+"/";
+				
+			} else {
+				deephash = tmphash.substr(0,tmphash.indexOf("/"));
+			}
+			
 			if(slide_curr==deephash&&tmpsection==section){
 				return;
 			} else {
@@ -89,7 +207,7 @@ function checkHash(state){
 			toggleDeals();
 		} else {
 			section = "";
-			if(tmpsection!="deals"&&deals_open){
+			if(deals_open&&tmpsection!="deals"&&tmpsection!="entry"&&tmpsection!="thanks"){
 				toggleDeals();
 			}
 			if(location.hash==""||location.hash=="#/"&&!home_open){
@@ -217,11 +335,11 @@ function initContent(){
 		{src:"lifestyle_03.jpg",alt:"City and state tax revenue from tourism &amp; convention dollars to the tune of $94.9 million in 2010"},
 		{src:"lifestyle_04.jpg",alt:"Help contribute to the very things that make Virginia Beach so great, like awesome local restaurants, shopping, free concerts, great events"},
 		{src:"lifestyle_05.jpg",alt:"The Beach"},
-		{src:"lifestyle_06.jpg",alt:"Plus easy access to the boardwalk and resort area",link:{url:"http://www.visitvirginiabeach.com/maps/",title:"link title",x:180,y:220,w:356,h:52}},
+		{src:"lifestyle_06.jpg",alt:"Plus easy access to the boardwalk and resort area",link:{url:"http://www.visitvirginiabeach.com/maps/",title:"link title",x:180,y:220,w:356,h:52,targetLink:"blank"}},
 		{src:"lifestyle_07.jpg",alt:"Sure, there are going to be a few bumps in the sand that come with living in a resort city"},
 		{src:"lifestyle_08.jpg",alt:"But what we get in return is a destination funded in large part by tourism &amp; conventions that we, the locals, get to groove on year-round"},
 		{src:"lifestyle_09.jpg",alt:"It&rsquo;s a great time to be a local tourist"},
-		{src:"lifestyle_10.jpg",alt:"Start here",link:{url:"http://www.visitvirginiabeach.com/",title:"link title",x:304,y:142,w:210,h:80}}
+		{src:"lifestyle_10.jpg",alt:"Start here",link:{url:"http://www.visitvirginiabeach.com/",title:"link title",x:304,y:142,w:210,h:80,targetLink:"blank"}}
 	]),index:slides_lifestyle};
 	
 	content_numbers.src = buildContent(slides_numbers,[
@@ -229,7 +347,7 @@ function initContent(){
 		{src:"numbers_01.jpg",alt:"The tourism &amp; convention industry is one of our largest and most dependable economic engines"},
 		{src:"numbers_02.jpg",alt:"In fact, starting in 2006, visitors have spent over $1 billion each year in the city."},
 		{src:"numbers_03.jpg",alt:"In 2010 alone, visitors spent $1.13 billion in Virginia Beach"},
-		{src:"numbers_04.jpg",alt:"Additionally, tourism &amp; conventions created thousands of jobs for local residents"},
+		{src:"numbers_04.jpg",alt:"Additionally, tourism &amp; conventions created tousands of jobs for local residents"},
 		{src:"numbers_05.jpg",alt:"Earning them more than $211,302,000"},
 		{src:"numbers_06.jpg",alt:"Tourism also deposited $94.9 million in city and state tax revenue"},
 		{src:"numbers_07.jpg",alt:"Money used for things like police, fire departments, and building roads"},
@@ -268,9 +386,9 @@ function initContent(){
 		{src:"future_04.jpg",alt:"And entertainment offerings, many being backed by public financial support"},
 		{src:"future_05.jpg",alt:"Fierce competition is growing in places like Louisville, Washington D.C., Raleigh, Myrtle Beach, and many other destinations"},
 		{src:"future_06.jpg",alt:"In the current economic climate, the only certainty is that we must continue to build on our successes, by reinvesting in the tourism &amp; convention industry"},
-		{src:"future_07.jpg",alt:"Future city improvement initiatives like the expansion of the Virginia Beach Convention Center to include additional parking &amp; meeting space,"},
+		{src:"future_07.jpg",alt:"Future city improvement initiatives like the expansion of the Virginia Beach Convention Center to include additional parking &amp; meeting space,",link:{url:"#cc_video",classVideo:"m_video",title:"Virginia Beach Convention Center",x:35,y:223,w:320,h:30,targetLink:"self"}},
 		{src:"future_08.jpg",alt:"The construction of a Convention Center Headquarters Hotel, the development of the 31st Street gateway and 19th Street corridor"},
-		{src:"future_09.jpg",alt:"And many other city improvement initiatives found here help position virginia beach as a top-tier tourism &amp; convention destination and keeps us competitive in a challenging arena",link:{url:"http://www.vbcvb.com/new-development-projects.aspx",title:"link title",x:278,y:105,w:70,h:30}},
+		{src:"future_09.jpg",alt:"And many other city improvement initiatives found here help position virginia beach as a top-tier tourism &amp; convention destination and keeps us competitive in a challenging arena",link:{url:"http://www.vbcvb.com/new-development-projects.aspx",title:"link title",x:278,y:105,w:70,h:30,targetLink:"blank"}},
 		{src:"future_10.jpg",alt:"The best part is, it&rsquo;s controllable in terms of the city&rsquo;s economic future"},
 		{src:"future_11.jpg",alt:"We as a community have a say in what the tourism industry can become in Virginia Beach"},
 		{src:"future_12.jpg",alt:"It&rsquo;s a great time to be a local tourist"}
@@ -278,6 +396,28 @@ function initContent(){
 	content_future.index = slides_future;
 	
 	initContact();
+	
+	// Convention Center video on click
+	$("a.m_video").live('click', function(){
+		if ( !$.browser.msie ) {
+			var video = $('#cc_video')[0];
+				video.play();
+		}
+		$(this).fancybox({ 
+			'transitionIn'	:	'fade',
+			'width'         		: 'auto',
+			'height': 350,
+			'type' : 'inline', 
+			'scrolling' : 'no',
+			'onStart': function(){
+				$("#contact_table").fadeIn(800);
+				$("#contact_sent").css("display","none");
+			},
+			'onCleanup': function(){
+				$("#fancybox-overlay").fadeOut();
+			}
+		});
+	});
 }
 
 function buildContent(index,slides){
@@ -286,8 +426,9 @@ function buildContent(index,slides){
 	var result = "<div class='content_container'>"+ss_pre+ss_next+"<div class='ss_wrap'><div id='ss_content'>";
 	for(var s=0;s<slides.length;s++){
 		index.push(-625*s);
+		
 		if(slides[s].link){
-			result += "<a href='"+slides[s].link.url+"' title='"+slides[s].link.title+"' target='_blank'><img src='img/blank.png' class='ss_link' style='margin:"+slides[s].link.y+"px 0 0 "+slides[s].link.x+"px; width:"+slides[s].link.w+"px; height:"+slides[s].link.h+"px' /></a>";
+			result += "<a href='"+slides[s].link.url+"' class='"+slides[s].link.classVideo+"' title='"+slides[s].link.title+"' target='_"+slides[s].link.targetLink+"'><img src='img/blank.png' class='ss_link' style='margin:"+slides[s].link.y+"px 0 0 "+slides[s].link.x+"px; width:"+slides[s].link.w+"px; height:"+slides[s].link.h+"px;' /></a>";
 		}
 		result += "<img class='ss_slide' src='img/"+slides[s].src+"' alt='"+slides[s].alt+"' title='"+slides[s].alt+"' />";
 	}
@@ -303,67 +444,109 @@ function buildContent(index,slides){
 var array_deals = [
 	{},
 	{
-		dealType: "coupon",
-		dealTitle: "THE VIRGINIA AQUARIUM",
-		dealDescription: "Escape the cold shoulder of winter with a trip to the hottest destination at the beach, the Virginia Aquarium. Enjoy smaller crowds along with your favorite aquatic friends as you dive into a world of underwater adventure, rub elbows with Komodo dragons, play with seals, go under the water with the Red Sea exhibit, and so much more!",
-		dealLink:"pdf/mocadeal.pdf"
+			deal_type:"coupon", 
+			title:"THE VIRGINIA AQUARIUM &amp; MARINE SCIENCE CENTER", 
+			description:"Escape the cold shoulder of winter with a trip to the hottest destination at the beach, the Virginia Aquarium. Enjoy smaller crowds along with your favorite aquatic friends as you dive into a world of underwater adventure, rub elbows with Komodo dragons, play with seals, go under the water with the Red Sea exhibit, and so much more!", 
+			link:"pdf/aquarium.pdf"
+	}, 
+	{
+			deal_type:"coupon", 
+			title:"Old Coast Guard Station", 
+			description:"Must present valid ID with Virginia Beach address to receive deal. Does not apply to special programs or group tours. Offer expires December 31, 2012.", 
+			link:"pdf/coastguard.pdf"
+	}, 
+	{
+			deal_type:"coupon", 
+			title:"Edgar Kayce A.R.E.", 
+			description:"Download and present this coupon at the Edgar Kayce A.R.E. VisitorÍs Center and receive a free gift just for showing up!", 
+			link:"pdf/edgar.pdf"
+	},
+	{
+			deal_type:"contest", 
+			title:"Virginia Beach Convention Center", 
+			description:"Fill out the entry form for a chance to win a pair of tickets to a designated consumer show at the Virginia Beach Convention Center.",
+			recipient: "candilanddesign@gmail.com"
+	},
+	{
+			deal_type:"coupon", 
+			title:"MOCA", 
+			description:"Purchase an Associate Membership at the Museum of Contemporary Art and save $25 just for being a Virginia Beach resident! Now for just $100 (regular price $125), you'll get access to some great Associate Level Member Benefits.", 
+			link:"pdf/moca.pdf"
+	}, 
+	{
+			deal_type:"coupon", 
+			title:"Sandler Center", 
+			description:"Use promocode VBGIFT to receive 10% off of tickets to see DanceBrazil on April 10th at 7:30 at the Sandler Center! <a href=\"http://ev8.evenue.net/cgi-bin/ncommerce3/EVExecMacro?linkID=global-sandler&evm=prmo&RSRC=&RDAT=&caller=PR\" target=\"blank\">Click here</a> to redeem your gift today!",
+			link:"pdf/sandler.pdf"
 	}
 ];
 
 // Build Deals Template
 
-function buildDeal(deal){
-	var deal = parseInt(deal);
+function buildDeal(index){
+	//var data = array_deals[index];
 	var numDeals = array_deals.length - 1;
+	var prev ='', next ='';
 	
-	//console.log(numDeals);
-	//console.log(deal);
-	alert(deal);
+	//console.log('numDeals: '+numDeals+', prev: '+prev+', next: '+next );
 	
 	// Check if there's a previous deal
-	if(deal != 1){
-		var prev = deal - 1;
-	} else {
-		var prev = '';
-	}
+	if(index != 1){
+		prev = index - 1;
+	} 
 
 	// Check if there's a next deal	
-	if(deal != numDeals){
-		var next = deal + 1;
-	} else {
-		var next = '';
-	}
+	if(index != numDeals){
+		next = index + 1;
+	} 
 	
+	/*
+template =  "<div class=\""+ array_deals[index].deal_type +"\">";
+	template += "<h1>"+ array_deals[index].title +"</h1>";
+	template += "<p class=\"description\">"+ array_deals[index].description +"</p>";
+	if(array_deals[index].link) {
+		template += "<a href=\""+ array_deals[index].link +"\" class=\"download\">Download PDF</a>";
+	} else {
+		template += "<a href=\"#\" class=\"enter_now\">Enter Now</a>";
+	}
+	template +=  "</div><!-- ."+ array_deals[index].deal_type +" -->";
+*/
 	var template =  "<div class=\"modal\">";
-	template +=  "<img src=\"img/close.png\" class=\"deal_close\" alt=\"Close Modal\" />";
-	template +=  "<div class=\""+ array_deals[deal].dealType +"\">";
-	template += "<h1>"+ array_deals[deal].dealTitle +"</h1>";
-	template += "<p class=\"description\">"+ array_deals[deal].dealDescription +"</p>";
-	if(array_deals[deal].link) {
-		template += "<a href=\""+ array_deals[deal].dealLink +"\" class=\"download\" target=\"_blank\">Download PDF</a>";
+	template += "<img src=\"img/close.png\" class=\"deal_close\" alt=\"Close Modal\" />";
+	template += "<div class=\""+ array_deals[index].deal_type +"\">";
+	template += "<h1>"+ array_deals[index].title +"</h1>";
+	template += "<p class=\"description\">"+ array_deals[index].description +"</p>";
+	if(array_deals[index].link) {
+		template += "<a href=\""+ array_deals[index].link +"\" class=\"download\" target=\"_blank\">Download PDF</a>";
 	} else {
-		template += "<a href=\"#/entry/"+ deal +"/\" class=\"enter_now\">Enter Now</a>";
+		template += "<a href=\"#/entry/"+ index +"/\" class=\"enter_now\">Enter Now</a>";
 	}
-	template +=  "</div><!-- ."+ array_deals[deal].dealType +" -->";
+	template +=  "</div><!-- ."+ array_deals[index].deal_type +" -->";
 	
+
 	if(prev != ''){
-		template +=  "<a href=\"#/deals/"+prev+"/\" class=\"prev-deals\"><img src=\"img/left.png\" alt=\"Previous Deal\"/>";
+		template +=  "<a href=\"#/deals/"+prev+"/\" class=\"prev-deals\"><img src=\"img/left.png\" alt=\"Previous Deal\"/></a>";
 	}
 	
 	if(next != ''){
-		template +=  "<a href=\"#/deals/"+next+"/\" class=\"next-deals\"><img src=\"img/right.png\" alt=\"Next Deal\"/>";	
+		template +=  "<a href=\"#/deals/"+next+"/\" class=\"next-deals\"><img src=\"img/right.png\" alt=\"Next Deal\"/></a>";	
 	}
+
 	
 	template +=  "</div><!-- .modal -->";
-
+	
 	return(template);
+	
 }
 
 function changeContent(caller){
 	var tmphash = location.hash;
-	/*if(deals_open){
+		/*
+if(deals_open){
 		toggleDeals();
-	}*/
+		
+	}
+*/
 	slide_curr = "";
 	if(caller=="nav_logo"){
 		if(!home_open){
@@ -377,6 +560,7 @@ function changeContent(caller){
 			section = "";
 		}
 	} else {
+		
 		if(home_open){
 			$("#home").stop(false,false).animate({"margin-top": "-570px"}, 700);
 			home_open = false;
@@ -385,7 +569,7 @@ function changeContent(caller){
 			$("#content_main").fadeOut(200, function(){
 				$("#content_main").fadeIn(800).html(content_lifestyle.src);
 				initSlideShow(content_lifestyle.index);
-			});
+			})
 			section = "lifestyle";
 		} else if(caller=="nav_numbers"){
 			$("#content_main").fadeOut(200, function(){
@@ -399,7 +583,7 @@ function changeContent(caller){
 				initSlideShow(content_community.index);
 			});
 			section = "community";
-		} else if(caller="nav_future"){
+		} else if(caller=="nav_future"){
 			$("#content_main").fadeOut(200, function(){
 				$("#content_main").fadeIn(800).html(content_future.src);
 				initSlideShow(content_future.index);
@@ -407,6 +591,10 @@ function changeContent(caller){
 			section = "future";
 		} else if(caller=="nav_deals"){
 			section = "deals";
+		} else if(caller=="nav_entry"){
+			section = "entry";
+		} else if(caller=="nav_thanks"){
+			section = "thanks";
 		}
 		tmphash = "#/"+section+"/";
 		if(deephash){
@@ -423,7 +611,7 @@ function toggleDeals(){
 		deals_open = false;
 		var tmpsection = location.hash.substr(2,location.hash.indexOf("/",2)-2);
 		
-		if(tmpsection=="deals"&&!home_open){
+		if(tmpsection=="deals"||tmpsection=="entry"||tmpsection=="thanks"&&!home_open){
 			changeContent("nav_logo");
 		} else {
 			location.hash = lasthash;
@@ -482,6 +670,33 @@ function handleContactSubmit(){
 				});
 			}
 		});
+	}
+}
+
+// Submit entry form
+function handleEntrySubmit(){
+	if($("#deal_overlay #txt_fname").val()!=""&&$("#deal_overlay #txt_email_addr").val()&&$("#deal_overlay #check_age").attr("checked")=="checked"&&$("#deal_overlay #check_terms").attr("checked")=="checked")	{
+		$.post("entry.asp", {
+			txt_fname:$("#txt_fname").val(), 
+			txt_lname:$("#txt_lname").val(),
+			txt_address:$("#txt_address").val(), 
+			txt_city:$("#txt_city").val(),
+			select_state:$("#select_state").val(), 
+			txt_zip_code:$("#txt_zip_code").val(),
+			txt_phone: $("#txt_phone").val(), 
+			txt_email_addr: $("#txt_email_addr").val(), 
+			check_age: $("#check_age").getAttribute("checked"), 
+			check_terms: $("#check_terms").getAttribute("checked"),
+		
+		txt_subject: "Gift of Tourism Entry Form"}, function(data) {
+			if(data=="sent"){
+				var target = $('#deal_overlay');
+				target.empty();
+				$('.thank_you').appendTo( target ).show();
+			}
+		});
+	} else {
+		$('#deal_overlay .required').show();
 	}
 }
 
