@@ -458,7 +458,11 @@ var array_deals = [
 	{
 			deal_type:"coupon", 
 			title:"Edgar Kayce A.R.E.", 
+<<<<<<< HEAD
 			description:"Download and present this coupon at the Edgar Kayce A.R.E. VisitorÍs Center and receive a free gift just for showing up!", 
+=======
+			description:"Download and present this coupon at the Edgar Kayce A.R.E. Visitor's Center and receive a free gift just for showing up!", 
+>>>>>>> updated files from branch 1.1
 			link:"pdf/edgar.pdf"
 	},
 	{
@@ -685,8 +689,14 @@ function handleEntrySubmit(){
 			txt_zip_code:$("#txt_zip_code").val(),
 			txt_phone: $("#txt_phone").val(), 
 			txt_email_addr: $("#txt_email_addr").val(), 
+<<<<<<< HEAD
 			check_age: $("#check_age").getAttribute("checked"), 
 			check_terms: $("#check_terms").getAttribute("checked"),
+=======
+			check_age: $("#check_age").attr("checked"), 
+			check_terms: $("#check_terms").attr("checked"),
+			contest_type: $("#contest_type").val(),
+>>>>>>> updated files from branch 1.1
 		
 		txt_subject: "Gift of Tourism Entry Form"}, function(data) {
 			if(data=="sent"){
