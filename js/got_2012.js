@@ -29,13 +29,18 @@ $(document).ready(function () {
 	});
 	
 	// Switch between deals with modal is open
-	$('.prev-deals, .next-deals').unbind('click').live('click',function(){
+	$('a.prev-deals, a.next-deals').unbind('click').live('click',function(){
 		var dealNum = new Array();
 		var dealString = $(this).attr('href');
 		
-		dealNum = dealString.split('/', 3);
-		var dealItem = parseInt(dealNum[2]);
-		
+		if ( $.browser.msie && parseInt($.browser.version) == 7 ) {
+			dealNum = dealString.substring(dealString.length-2);
+			var dealItem = parseInt(dealNum.substr(0,1));
+		} else {
+			dealNum = dealString.split('/', 3);
+			var dealItem = parseInt(dealNum[2]);
+		}
+				
 		var template = buildDeal(dealItem), target = $('#deal_overlay');
 		
 		target.empty();
@@ -62,10 +67,10 @@ $(document).ready(function () {
 	});
 	
 	// View more deals
-	$('.more-deals').live('click',function(e){
+	$('.more-deals').click(function(e){
 		e.preventDefault();
-		//console.log($('.prev-set').css('display'));
-		if($('.prev-set').css('display')=='table-row'){
+		var cssPre = $('.prev-set').css('display');
+		if(cssPre=='table-row'||cssPre=='block'){
 			$('.prev-set').hide();
 			$('.next-set').show(); 	
 			
@@ -170,7 +175,7 @@ function checkHash(state){
 			handleIntro();
 		}
 	} else if(state=="update"){
-		if(location.hash!="#/"&&location.hash!=""&&tmpsection!="deals"&&tmpsection!="entry"){
+		if(location.hash!="#/"&&location.hash!=""&&tmpsection!="deals"&&tmpsection!="entry"&&location.hash=="#cc_video"){
 			if(deals_open){
 				lasthash = location.hash;
 				toggleDeals();
@@ -178,9 +183,38 @@ function checkHash(state){
 			}
 			
 			if(location.hash=="#cc_video"){
-				
+					alert('cc video!');
 				// Triggers the fancybox
-				$("a.m_video").trigger("click");
+				if( $.browser.msie && parseInt($.browser.version) == 7 ) {
+					alert('YES!');
+					$("a.m_video").fancybox({ 
+						'padding': 0,
+						'margin': 0,
+						'hideOnContentClick': false,
+						'hideOnOverlayClick': true,
+						'transitionIn'	:	'fade',
+						'transitionOut'	:	'fade',
+						'speedIn'		:	400, 
+						'speedOut'		:	600, 
+						'overlayShow'	:	true,
+						'overlayOpacity': 0.6,
+						'overlayColor': '#000',
+						'width'         : 'auto',
+						'height': 350,
+						'type' : 'inline', 
+						'scrolling' : 'no',
+						'onStart': function(){
+							$("#contact_table").fadeIn(800);
+							$("#contact_sent").css("display","none");
+						},
+						'onCleanup': function(){
+							$("#fancybox-overlay").fadeOut();
+						}
+					});		
+				} else {
+					$("a.m_video").trigger("click");
+				}
+				
 				tmpsection = "future",
 				deephash = 7;
 				
@@ -394,18 +428,26 @@ function initContent(){
 		{src:"future_12.jpg",alt:"It&rsquo;s a great time to be a local tourist"}
 	]);
 	content_future.index = slides_future;
-	
-	initContact();
-	
+
 	// Convention Center video on click
-	$("a.m_video").live('click', function(){
+	$("a.m_video").unbind('click').live('click', function(){
 		if ( !$.browser.msie ) {
 			var video = $('#cc_video')[0];
 				video.play();
 		}
 		$(this).fancybox({ 
+			'padding': 0,
+			'margin': 0,
+			'hideOnContentClick': false,
+			'hideOnOverlayClick': true,
 			'transitionIn'	:	'fade',
-			'width'         		: 'auto',
+			'transitionOut'	:	'fade',
+			'speedIn'		:	400, 
+			'speedOut'		:	600, 
+			'overlayShow'	:	true,
+			'overlayOpacity': 0.6,
+			'overlayColor': '#000',
+			'width'         : 'auto',
 			'height': 350,
 			'type' : 'inline', 
 			'scrolling' : 'no',
@@ -418,6 +460,9 @@ function initContent(){
 			}
 		});
 	});
+	
+	initContact();
+
 }
 
 function buildContent(index,slides){
@@ -458,11 +503,7 @@ var array_deals = [
 	{
 			deal_type:"coupon", 
 			title:"Edgar Kayce A.R.E.", 
-<<<<<<< HEAD
-			description:"Download and present this coupon at the Edgar Kayce A.R.E. VisitorÍs Center and receive a free gift just for showing up!", 
-=======
 			description:"Download and present this coupon at the Edgar Kayce A.R.E. Visitor's Center and receive a free gift just for showing up!", 
->>>>>>> updated files from branch 1.1
 			link:"pdf/edgar.pdf"
 	},
 	{
@@ -492,8 +533,6 @@ function buildDeal(index){
 	var numDeals = array_deals.length - 1;
 	var prev ='', next ='';
 	
-	//console.log('numDeals: '+numDeals+', prev: '+prev+', next: '+next );
-	
 	// Check if there's a previous deal
 	if(index != 1){
 		prev = index - 1;
@@ -504,17 +543,6 @@ function buildDeal(index){
 		next = index + 1;
 	} 
 	
-	/*
-template =  "<div class=\""+ array_deals[index].deal_type +"\">";
-	template += "<h1>"+ array_deals[index].title +"</h1>";
-	template += "<p class=\"description\">"+ array_deals[index].description +"</p>";
-	if(array_deals[index].link) {
-		template += "<a href=\""+ array_deals[index].link +"\" class=\"download\">Download PDF</a>";
-	} else {
-		template += "<a href=\"#\" class=\"enter_now\">Enter Now</a>";
-	}
-	template +=  "</div><!-- ."+ array_deals[index].deal_type +" -->";
-*/
 	var template =  "<div class=\"modal\">";
 	template += "<img src=\"img/close.png\" class=\"deal_close\" alt=\"Close Modal\" />";
 	template += "<div class=\""+ array_deals[index].deal_type +"\">";
@@ -689,14 +717,9 @@ function handleEntrySubmit(){
 			txt_zip_code:$("#txt_zip_code").val(),
 			txt_phone: $("#txt_phone").val(), 
 			txt_email_addr: $("#txt_email_addr").val(), 
-<<<<<<< HEAD
-			check_age: $("#check_age").getAttribute("checked"), 
-			check_terms: $("#check_terms").getAttribute("checked"),
-=======
 			check_age: $("#check_age").attr("checked"), 
 			check_terms: $("#check_terms").attr("checked"),
 			contest_type: $("#contest_type").val(),
->>>>>>> updated files from branch 1.1
 		
 		txt_subject: "Gift of Tourism Entry Form"}, function(data) {
 			if(data=="sent"){
