@@ -107,6 +107,7 @@ a {
 	text-align: left;
 	margin: 0 15px;
 }
+#dealsgrid .deal-link { text-decoration: underline; }
 #dealsgrid td {
 	vertical-align:middle;
 	padding:4px;
@@ -194,6 +195,9 @@ a {
 	left: 25px;
 	display: block;
 	cursor: pointer;
+}
+*+html .more-deals {
+	top: 575px;
 }
 	
 
@@ -543,7 +547,6 @@ span.fb_close {
 	border:2px solid #b82742;
 	opacity:1;
 }
-
 
 #foot {
 	width:100%;

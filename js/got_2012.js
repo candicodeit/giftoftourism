@@ -89,9 +89,8 @@ $(document).ready(function () {
 	$("#ss_content a.m_video").livequery(function(){
 		if ( !$.browser.msie ) {
 			var video = $('#cc_video')[0];
-				video.play();
+			video.play();
 		}
-		
 		$(this).fancybox({ 
 			'transitionIn'	:	'fade',
 			'width'         		: 'auto',
@@ -103,9 +102,12 @@ $(document).ready(function () {
 			'onStart': function(){
 				$("#contact_table").fadeIn(800);
 				$("#contact_sent").css("display","none");
-			},
-			'onCleanup': function(){
-				$("#fancybox-overlay").fadeOut();
+			}, 
+			'onClosed' : function(){
+				if ( !$.browser.msie ) {
+					var video = $('#cc_video')[0];
+					video.currentTime=1;
+				}
 			}
 		});
 	});
@@ -211,10 +213,6 @@ function checkHash(state){
 				return;
 			}
 				deephash = tmphash.substr(0,tmphash.indexOf("/"));
-				tmpsection = "future",
-				deephash = 7;
-				
-				location.hash = "#/"+tmpsection+"/"+deephash+"/";
 			
 			if(slide_curr==deephash&&tmpsection==section){
 				return;
@@ -477,7 +475,7 @@ var array_deals = [
 	{
 			deal_type:"coupon", 
 			title:"MOCA", 
-			description:"Purchase an Associate Membership at the Museum of Contemporary Art and save $25 just for being a Virginia Beach resident! Now for just $100 (regular price $125), you'll get access to some great Associate Level Member Benefits.", 
+			description:"Purchase an Associate Membership at the Virginia Museum of Contemporary Art and save $25 just for being a Virginia Beach resident! Now for just $100 (regular price $125), you'll get access to some great Associate Level Member Benefits.", 
 			link:"pdf/moca.pdf"
 	}, 
 	{
