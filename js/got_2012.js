@@ -84,19 +84,22 @@ $(document).ready(function () {
 	$("#entry_submit").live("click", function(){
 		handleEntrySubmit();
 	});
-	
-	// Convention Center video on click
-	$("a.m_video").live('click', function(){
+
+	// Convention Center video on click	
+	$("#ss_content a.m_video").livequery(function(){
 		if ( !$.browser.msie ) {
 			var video = $('#cc_video')[0];
 				video.play();
 		}
+		
 		$(this).fancybox({ 
 			'transitionIn'	:	'fade',
 			'width'         		: 'auto',
 			'height': 350,
 			'type' : 'inline', 
 			'scrolling' : 'no',
+			'showCloseButton' : true,
+			'enableEscapeButton' : true,
 			'onStart': function(){
 				$("#contact_table").fadeIn(800);
 				$("#contact_sent").css("display","none");
@@ -106,11 +109,24 @@ $(document).ready(function () {
 			}
 		});
 	});
+	
+	$("#fancybox-overlay").live('click',function(){
+		$(this).hide();
+		$("#fancybox-wrap").hide();
+	});
 });
 
 function checkHash(state){
 	var tmpsection = location.hash.substr(2,location.hash.indexOf("/",2)-2);
 	var tmphash = location.hash.substr(location.hash.indexOf("/",2)+1);
+	
+	if (location.hash=="#cc_video"){
+		
+		tmpsection = "future",
+		deephash = 7;
+		
+		location.hash = "#/"+tmpsection+"/"+deephash+"/";
+	}
 	
 	if(state=="init"){
 		$(window).bind("hashchange", function(){
@@ -141,7 +157,6 @@ function checkHash(state){
 				deephash = tmphash.substr(0,tmphash.indexOf("/"));
 				
 				deephash = parseInt(deephash);
-				//console.log('deephash: '+deephash+' tmpsection: '+tmpsection+' tmphash: '+tmphash );
 								
 				var template = buildDeal(deephash), target = $('#deal_overlay');
 				$(template).appendTo( target );
@@ -189,26 +204,13 @@ function checkHash(state){
 			handleIntro();
 		}
 	} else if(state=="update"){
-		if(location.hash!="#/"&&location.hash!=""&&tmpsection!="deals"&&tmpsection!="entry"&&location.hash=="#cc_video"){
+		if(location.hash!="#/"&&location.hash!=""&&tmpsection!="deals"&&tmpsection!="entry"){
 			if(deals_open){
 				lasthash = location.hash;
 				toggleDeals();
 				return;
 			}
-			
-			if(location.hash=="#cc_video"){
-			
-				// Triggers the fancybox
-				$("a.m_video").trigger("click");
-				
-				tmpsection = "future",
-				deephash = 7;
-				
-				location.hash = "#/"+tmpsection+"/"+deephash+"/";
-				
-			} else {
 				deephash = tmphash.substr(0,tmphash.indexOf("/"));
-			}
 				tmpsection = "future",
 				deephash = 7;
 				
@@ -230,10 +232,6 @@ function checkHash(state){
 		} else if(location.hash=="#/deals/"&&!deals_open){
 			toggleDeals();
 		} else {
-		
-			if(location.hash=="#cc_video"){
-				$("a.m_video").trigger("click");
-			}
 			section = "";
 			if(deals_open&&tmpsection!="deals"&&tmpsection!="entry"&&tmpsection!="thanks"){
 				toggleDeals();
