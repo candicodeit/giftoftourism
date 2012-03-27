@@ -11,8 +11,6 @@ $(document).ready(function () {
 	initContent();
 	checkHash("init");
 	
-	//$('#deal_overlay').hide();
-	
 	$('a.learn').unbind('click').click(function(){
 		var dealNum = new Array();
 		var dealString = $(this).attr('href');
@@ -86,17 +84,33 @@ $(document).ready(function () {
 	$("#entry_submit").live("click", function(){
 		handleEntrySubmit();
 	});
+	
+	// Convention Center video on click
+	$("a.m_video").live('click', function(){
+		if ( !$.browser.msie ) {
+			var video = $('#cc_video')[0];
+				video.play();
+		}
+		$(this).fancybox({ 
+			'transitionIn'	:	'fade',
+			'width'         		: 'auto',
+			'height': 350,
+			'type' : 'inline', 
+			'scrolling' : 'no',
+			'onStart': function(){
+				$("#contact_table").fadeIn(800);
+				$("#contact_sent").css("display","none");
+			},
+			'onCleanup': function(){
+				$("#fancybox-overlay").fadeOut();
+			}
+		});
+	});
 });
 
 function checkHash(state){
 	var tmpsection = location.hash.substr(2,location.hash.indexOf("/",2)-2);
 	var tmphash = location.hash.substr(location.hash.indexOf("/",2)+1);
-	
-	if (tmphash == "#cc_video"){
-		var videohash = tmphash,
-		tmphash = "7/",
-		tmpsection = "future";
-	}
 	
 	if(state=="init"){
 		$(window).bind("hashchange", function(){
@@ -183,37 +197,9 @@ function checkHash(state){
 			}
 			
 			if(location.hash=="#cc_video"){
-					alert('cc video!');
+			
 				// Triggers the fancybox
-				if( $.browser.msie && parseInt($.browser.version) == 7 ) {
-					alert('YES!');
-					$("a.m_video").fancybox({ 
-						'padding': 0,
-						'margin': 0,
-						'hideOnContentClick': false,
-						'hideOnOverlayClick': true,
-						'transitionIn'	:	'fade',
-						'transitionOut'	:	'fade',
-						'speedIn'		:	400, 
-						'speedOut'		:	600, 
-						'overlayShow'	:	true,
-						'overlayOpacity': 0.6,
-						'overlayColor': '#000',
-						'width'         : 'auto',
-						'height': 350,
-						'type' : 'inline', 
-						'scrolling' : 'no',
-						'onStart': function(){
-							$("#contact_table").fadeIn(800);
-							$("#contact_sent").css("display","none");
-						},
-						'onCleanup': function(){
-							$("#fancybox-overlay").fadeOut();
-						}
-					});		
-				} else {
-					$("a.m_video").trigger("click");
-				}
+				$("a.m_video").trigger("click");
 				
 				tmpsection = "future",
 				deephash = 7;
@@ -223,6 +209,10 @@ function checkHash(state){
 			} else {
 				deephash = tmphash.substr(0,tmphash.indexOf("/"));
 			}
+				tmpsection = "future",
+				deephash = 7;
+				
+				location.hash = "#/"+tmpsection+"/"+deephash+"/";
 			
 			if(slide_curr==deephash&&tmpsection==section){
 				return;
@@ -240,6 +230,10 @@ function checkHash(state){
 		} else if(location.hash=="#/deals/"&&!deals_open){
 			toggleDeals();
 		} else {
+		
+			if(location.hash=="#cc_video"){
+				$("a.m_video").trigger("click");
+			}
 			section = "";
 			if(deals_open&&tmpsection!="deals"&&tmpsection!="entry"&&tmpsection!="thanks"){
 				toggleDeals();
@@ -429,37 +423,7 @@ function initContent(){
 	]);
 	content_future.index = slides_future;
 
-	// Convention Center video on click
-	$("a.m_video").unbind('click').live('click', function(){
-		if ( !$.browser.msie ) {
-			var video = $('#cc_video')[0];
-				video.play();
-		}
-		$(this).fancybox({ 
-			'padding': 0,
-			'margin': 0,
-			'hideOnContentClick': false,
-			'hideOnOverlayClick': true,
-			'transitionIn'	:	'fade',
-			'transitionOut'	:	'fade',
-			'speedIn'		:	400, 
-			'speedOut'		:	600, 
-			'overlayShow'	:	true,
-			'overlayOpacity': 0.6,
-			'overlayColor': '#000',
-			'width'         : 'auto',
-			'height': 350,
-			'type' : 'inline', 
-			'scrolling' : 'no',
-			'onStart': function(){
-				$("#contact_table").fadeIn(800);
-				$("#contact_sent").css("display","none");
-			},
-			'onCleanup': function(){
-				$("#fancybox-overlay").fadeOut();
-			}
-		});
-	});
+
 	
 	initContact();
 
